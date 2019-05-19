@@ -3,6 +3,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from stanfordnlp.server import CoreNLPClient
+import os
 from glove import *
 
 
@@ -66,11 +67,10 @@ if __name__ == '__main__':
     lr = 0.05
     batch_size = 16
     num_epochs = 10
-    text_file = "short_story.txt"
+    text_file = os.path.join("..", "data", "short_story.txt")
 
     dataset = TextDataset(text_file, context_size)
-    dataloader = DataLoader(dataset, batch_size=batch_size,
-                            shuffle=True, num_workers=4)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     glove = GloVe(len(dataset.vocab), dataset.co_occurences, embed_size=embed_size)
     optimizer = optim.Adagrad(glove.parameters(), lr)
@@ -91,46 +91,3 @@ if __name__ == '__main__':
                 running_loss = 0.0
 
     word_embedding = glove.embedding()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # with open("short_story.txt", 'r') as f:
-    #     text = f.read().lower()
-    #
-    # with CoreNLPClient(annotators=['tokenize'],
-    #                    timeout=30000, memory='16G') as client:
-    #     ann = client.annotate(text)
-    #
-    # word_list = [token.word for token in ann.sentencelessToken]
-    # vocab = np.unique(word_list)
-    # vocab_size = len(vocab)
-    #
-    # word2index = {word: index for index, word in enumerate(vocab)}
-    # index2word = {index: word for index, word in enumerate(vocab)}
-    #
-    # co_occurences = np.zeros((vocab_size, vocab_size))
-    #
-    # for i in range(len(word_list)):
-    #     for j in range(1, context_size+1):
-    #         index = word2index[word_list[i]]
-    #         if i - j >= 0:
-    #             lindex = word2index[word_list[i - j]]
-    #             co_occurences[index][lindex] += 1.0 / j
-    #         if i + j < len(word_list):
-    #             rindex = word2index[word_list[i + j]]
-    #             co_occurences[index][rindex] += 1.0 / j
-
-    # nonzero_index = np.transpose(np.nonzero(co_occurences))
