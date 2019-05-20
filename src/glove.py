@@ -36,7 +36,7 @@ class GloVe(nn.Module):
         embedded_target_words = self.tilde_W(target_ids)
         target_bias = self.tilde_b(target_ids)
 
-        loss = torch.sum(
+        loss = torch.mean(
             torch.pow(
                 weights * ((embedded_words * embedded_target_words).sum(1) + bias + target_bias).squeeze(1) - torch.log(co_ocs),
                 2

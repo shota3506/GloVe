@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from stanfordnlp.server import CoreNLPClient
 import os
+from tqdm import tqdm
 from glove import *
 
 
@@ -70,6 +71,7 @@ if __name__ == '__main__':
     text_file = os.path.join("..", "data", "short_story.txt")
 
     dataset = TextDataset(text_file, context_size)
+    dataset_size = len(dataset)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     glove = GloVe(len(dataset.vocab), dataset.co_occurences, embed_size=embed_size)
@@ -78,16 +80,15 @@ if __name__ == '__main__':
     for epoch in range(num_epochs):
         running_loss = 0.0
 
-        for i_batch, (word_ids, target_ids) in enumerate(dataloader):
+        pbar = tqdm(dataloader)
+        for i_batch, (word_ids, target_ids) in enumerate(pbar):
+            pbar.set_description('epoch %3d / %d' % (epoch + 1, num_epochs))
             loss = glove(word_ids, target_ids)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            running_loss += loss.item()
-            if (i_batch + 1) % 100 == 0:  # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i_batch + 1, running_loss / 100))
-                running_loss = 0.0
+            running_loss += loss.item() * batch_size
+            pbar.set_postfix(loss=running_loss / dataset_size)
 
     word_embedding = glove.embedding()
